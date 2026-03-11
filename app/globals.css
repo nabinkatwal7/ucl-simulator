@@ -1,0 +1,234 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ucl-bg: #020c2b;
+  --ucl-surface: #071235;
+  --ucl-card: #0a1f44;
+  --ucl-card-2: #132b6b;
+  --ucl-line: #244aa5;
+  --ucl-accent: #00e5ff;
+  --ucl-accent-2: #2fd3ff;
+  --ucl-silver: #c9d1e5;
+  --ucl-text: #eaf2ff;
+  --ucl-muted: #8fa8d8;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(47, 211, 255, 0.10), transparent 22%),
+    radial-gradient(circle at 20% 10%, rgba(0, 123, 255, 0.14), transparent 26%),
+    radial-gradient(circle at 80% 0%, rgba(74, 217, 255, 0.10), transparent 24%),
+    linear-gradient(180deg, #020c2b 0%, #071235 45%, #020c2b 100%);
+  color: var(--ucl-text);
+}
+
+main {
+  min-height: 100vh;
+}
+
+.ucl-starball-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at center, rgba(19, 43, 107, 0.58) 0%, rgba(2, 12, 43, 0.2) 30%, transparent 62%),
+    linear-gradient(180deg, rgba(10, 31, 68, 0.78), rgba(2, 12, 43, 0.92));
+}
+
+.ucl-starball-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -2;
+  background:
+    radial-gradient(circle at center,
+      rgba(0, 229, 255, 0.22) 0%,
+      rgba(47, 211, 255, 0.11) 16%,
+      rgba(0, 123, 255, 0.10) 26%,
+      rgba(10, 31, 68, 0.03) 44%,
+      transparent 60%);
+  filter: blur(26px);
+  transform: scale(1.08);
+}
+
+.ucl-starball-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.42;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 18%, rgba(0,229,255,0.08) 18.4%, transparent 19%),
+    conic-gradient(
+      from -18deg at 50% 50%,
+      transparent 0deg 24deg,
+      rgba(201,209,229,0.22) 24deg 26deg,
+      transparent 26deg 48deg,
+      rgba(0,229,255,0.18) 48deg 50deg,
+      transparent 50deg 72deg,
+      rgba(201,209,229,0.16) 72deg 74deg,
+      transparent 74deg 96deg,
+      rgba(0,229,255,0.18) 96deg 98deg,
+      transparent 98deg 120deg,
+      rgba(201,209,229,0.16) 120deg 122deg,
+      transparent 122deg 144deg,
+      rgba(0,229,255,0.18) 144deg 146deg,
+      transparent 146deg 168deg,
+      rgba(201,209,229,0.16) 168deg 170deg,
+      transparent 170deg 192deg,
+      rgba(0,229,255,0.18) 192deg 194deg,
+      transparent 194deg 216deg,
+      rgba(201,209,229,0.16) 216deg 218deg,
+      transparent 218deg 240deg,
+      rgba(0,229,255,0.18) 240deg 242deg,
+      transparent 242deg 264deg,
+      rgba(201,209,229,0.16) 264deg 266deg,
+      transparent 266deg 288deg,
+      rgba(0,229,255,0.18) 288deg 290deg,
+      transparent 290deg 312deg,
+      rgba(201,209,229,0.16) 312deg 314deg,
+      transparent 314deg 336deg,
+      rgba(0,229,255,0.18) 336deg 338deg,
+      transparent 338deg 360deg
+    );
+  filter: blur(0.3px);
+  mask-image: radial-gradient(circle at center, black 0 36%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle at center, black 0 36%, transparent 72%);
+}
+
+.ucl-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.75) 1px, transparent 1.2px),
+    radial-gradient(circle, rgba(0,229,255,0.65) 1px, transparent 1.2px),
+    radial-gradient(circle, rgba(201,209,229,0.55) 1px, transparent 1.2px);
+  background-size: 140px 140px, 220px 220px, 180px 180px;
+  background-position: 10px 20px, 100px 40px, 60px 100px;
+}
+
+.ucl-panel {
+  @apply rounded-ucl border border-white/10 bg-ucl-panel shadow-ucl-md backdrop-blur-md;
+}
+
+.ucl-panel-border {
+  position: relative;
+}
+
+.ucl-panel-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(0,229,255,0.50), rgba(47,211,255,0.10) 40%, rgba(201,209,229,0.22));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.ucl-heading {
+  @apply text-ucl-text tracking-[0.22em] uppercase text-xs font-semibold;
+}
+
+.ucl-title {
+  @apply text-2xl md:text-4xl font-bold text-white;
+  text-shadow: 0 0 22px rgba(0, 229, 255, 0.14);
+}
+
+.ucl-muted {
+  @apply text-sm text-ucl-muted;
+}
+
+.panel {
+  @apply rounded-[32px] border border-ucl-glow/20 bg-ucl-panel shadow-broadcast backdrop-blur-xl;
+}
+
+.panel-title {
+  @apply text-[11px] font-semibold uppercase tracking-[0.34em] text-ucl-accent/85;
+}
+
+.metric-card {
+  @apply rounded-[28px] border border-ucl-glow/20 bg-gradient-to-b from-ucl-card/95 to-ucl-surface/95 p-6 shadow-neon;
+}
+
+.data-grid {
+  background-image:
+    linear-gradient(rgba(74, 217, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 217, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.table-shell {
+  @apply overflow-hidden rounded-[28px] border border-ucl-divider/50 bg-ucl-surface/90;
+}
+
+.table-shell table {
+  @apply min-w-full text-left text-sm;
+}
+
+.table-shell th {
+  @apply bg-ucl-card px-4 py-4 text-xs font-semibold uppercase tracking-[0.22em] text-ucl-silver;
+}
+
+.table-shell td {
+  @apply border-t border-ucl-divider/35 px-4 py-4 text-ucl-silver;
+}
+
+.badge-soft {
+  @apply inline-flex items-center gap-2 rounded-full border border-ucl-glow/20 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-ucl-text;
+}
+
+.section-shell {
+  @apply panel p-6 sm:p-8;
+}
+
+.soft-divider {
+  @apply border-t border-ucl-divider/35;
+}
+
+.glow-text,
+.ucl-glow-text {
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.18), 0 0 20px rgba(0, 229, 255, 0.08);
+}
+
+.ucl-soft-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.24), rgba(201, 209, 229, 0.28), transparent);
+}
+
+.ucl-grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.zone-qualified {
+  @apply bg-ucl-qualified/15 text-green-100 ring-1 ring-ucl-qualified/35;
+}
+
+.zone-playoff {
+  @apply bg-ucl-playoff/15 text-yellow-100 ring-1 ring-ucl-playoff/35;
+}
+
+.zone-eliminated {
+  @apply bg-ucl-eliminated/15 text-rose-100 ring-1 ring-ucl-eliminated/35;
+}
