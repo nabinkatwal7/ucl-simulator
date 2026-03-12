@@ -30,7 +30,9 @@ export async function advanceDay(careerId: number) {
     sentOn: nextDate,
     category: "calendar",
     subject: "Daily briefing",
-    body: `A new day begins. Date advanced to ${nextDate.toISOString().slice(0, 10)}.`,
+    body: `A new day begins. Date advanced to ${nextDate
+      .toISOString()
+      .slice(0, 10)}.`,
     isRead: 0,
     actionPayloadJson: null,
   });

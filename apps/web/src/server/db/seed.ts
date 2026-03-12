@@ -3,13 +3,18 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { dbPath, ensureDbDir } from "./paths";
 import {
   careerClubState,
+  careerCompetitions,
+  careerRosters,
   careerSettings,
   careers,
   clubs,
   competitionTemplates,
+  fixtures,
   inboxMessages,
+  leagueTables,
   leagues,
   nations,
+  players,
   positions,
 } from "./schema";
 
@@ -187,16 +192,134 @@ const competitionTemplateSeed = [
   },
 ];
 
+const firstNames = [
+  "Alex",
+  "Jordan",
+  "Luis",
+  "Marco",
+  "Rafael",
+  "Ethan",
+  "Noah",
+  "Diego",
+  "Mateo",
+  "Hugo",
+  "Liam",
+  "Owen",
+];
+
+const lastNames = [
+  "Parker",
+  "Santos",
+  "Herrera",
+  "Navarro",
+  "Silva",
+  "Reed",
+  "Walker",
+  "Brooks",
+  "Castillo",
+  "Mendes",
+  "Lopez",
+  "Gray",
+];
+
+const positionCycle = [
+  "GK",
+  "RB",
+  "CB",
+  "CB",
+  "LB",
+  "CDM",
+  "CM",
+  "CM",
+  "CAM",
+  "RW",
+  "LW",
+  "ST",
+  "ST",
+  "RB",
+  "CB",
+  "LB",
+  "CM",
+  "CAM",
+  "RW",
+  "LW",
+  "ST",
+  "GK",
+];
+
+function buildPlayers(clubRows: Array<{ id: number; name: string; nationId: number; prestige: number }>) {
+  const playersToInsert: Array<{
+    firstName: string;
+    lastName: string;
+    commonName: string | null;
+    nationalityId: number;
+    birthDate: Date;
+    preferredFoot: string;
+    heightCm: number;
+    weightKg: number;
+    potential: number;
+    overall: number;
+    primaryPosition: string;
+    secondaryPositionsJson: string;
+    valueAmount: number;
+    wageAmount: number;
+    faceAssetKey: string | null;
+    bodyType: string;
+    isRealPlayer: number;
+    createdFrom: string;
+    seedClubId: number;
+  }> = [];
+
+  clubRows.forEach((club, clubIndex) => {
+    const baseOverall = 65 + club.prestige * 2;
+    for (let i = 0; i < 22; i += 1) {
+      const firstName = firstNames[(clubIndex + i) % firstNames.length];
+      const lastName = lastNames[(clubIndex + i * 2) % lastNames.length];
+      const overall = Math.min(90, baseOverall + (i % 5));
+      const potential = Math.min(92, overall + 4);
+      const position = positionCycle[i % positionCycle.length];
+      playersToInsert.push({
+        firstName,
+        lastName,
+        commonName: null,
+        nationalityId: club.nationId,
+        birthDate: new Date(1994 + (i % 8), 5, 15),
+        preferredFoot: i % 3 === 0 ? "left" : "right",
+        heightCm: 172 + (i % 12),
+        weightKg: 68 + (i % 10),
+        potential,
+        overall,
+        primaryPosition: position,
+        secondaryPositionsJson: JSON.stringify([]),
+        valueAmount: overall * 90000,
+        wageAmount: overall * 2500,
+        faceAssetKey: null,
+        bodyType: "lean",
+        isRealPlayer: 0,
+        createdFrom: "seed",
+        seedClubId: club.id,
+      });
+    }
+  });
+
+  return playersToInsert;
+}
+
 async function main() {
   ensureDbDir();
   const sqlite = new Database(dbPath);
   sqlite.pragma("foreign_keys = ON");
   const db = drizzle(sqlite);
 
+  await db.delete(leagueTables);
+  await db.delete(fixtures);
+  await db.delete(careerCompetitions);
   await db.delete(inboxMessages);
+  await db.delete(careerRosters);
   await db.delete(careerClubState);
   await db.delete(careerSettings);
   await db.delete(careers);
+  await db.delete(players);
   await db.delete(competitionTemplates);
   await db.delete(positions);
   await db.delete(clubs);
@@ -258,73 +381,95 @@ async function main() {
     }))
   );
 
-  const clubRows = await db.select({ id: clubs.id }).from(clubs).limit(1);
+  const clubRows = await db
+    .select({ id: clubs.id, name: clubs.name, nationId: clubs.nationId, prestige: clubs.prestige })
+    .from(clubs);
 
-  if (clubRows.length > 0) {
-    const careerRows = await db
-      .insert(careers)
-      .values({
-        name: "Demo Career",
-        mode: "manager",
-        managerProfileName: "Alex Hunter",
-        controlledClubId: clubRows[0].id,
-        currentDate: NOW,
-        currentSeasonNumber: 1,
-        status: "active",
-        rngSeed: "seed-001",
-        createdAt: NOW,
-        updatedAt: NOW,
-      })
-      .returning({ id: careers.id });
+  const playersToInsert = buildPlayers(clubRows);
+  const playerRows = await db.insert(players).values(playersToInsert).returning({
+    id: players.id,
+    seedClubId: players.seedClubId,
+  });
 
-    const careerId = careerRows[0].id;
+  const demoCareerRows = await db
+    .insert(careers)
+    .values({
+      name: "Demo Career",
+      mode: "manager",
+      managerProfileName: "Alex Hunter",
+      controlledClubId: clubRows[0].id,
+      currentDate: NOW,
+      currentSeasonNumber: 1,
+      status: "active",
+      rngSeed: "seed-001",
+      createdAt: NOW,
+      updatedAt: NOW,
+    })
+    .returning({ id: careers.id });
 
-    await db.insert(careerSettings).values({
+  const careerId = demoCareerRows[0].id;
+
+  await db.insert(careerSettings).values({
+    careerId,
+    currencySymbol: "£",
+    boardStrictness: 2,
+    transferDifficulty: 2,
+    scoutingDifficulty: 2,
+    enableFirstWindow: 1,
+    enableInternationalManagement: 0,
+    injuryFrequency: 2,
+    playerGrowthSpeed: 2,
+    autosaveEnabled: 1,
+  });
+
+  await db.insert(inboxMessages).values({
+    careerId,
+    sentOn: NOW,
+    category: "board",
+    subject: "Welcome to the club",
+    body: "Board expectations set. Your first objectives will arrive shortly.",
+    isRead: 0,
+    actionPayloadJson: null,
+  });
+
+  await db.insert(careerRosters).values(
+    playerRows.map((player, index) => ({
       careerId,
-      currencySymbol: "£",
-      boardStrictness: 2,
-      transferDifficulty: 2,
-      scoutingDifficulty: 2,
-      enableFirstWindow: 1,
-      enableInternationalManagement: 0,
-      injuryFrequency: 2,
-      playerGrowthSpeed: 2,
-      autosaveEnabled: 1,
-    });
+      playerId: player.id,
+      clubId: player.seedClubId,
+      squadRole: "rotation",
+      squadStatus: "senior",
+      shirtNumber: (index % 30) + 1,
+      joinedOn: NOW,
+      contractEndDate: new Date(2028, 5, 30),
+      releaseClause: null,
+      isListedForLoan: 0,
+      isListedForTransfer: 0,
+      morale: 60 + (index % 20),
+      form: 55 + (index % 15),
+      sharpnessPlaceholder: null,
+      fitness: 75 + (index % 20),
+      staminaModifier: 0,
+      injuryStatus: "healthy",
+      injuryType: null,
+      injuryEndDate: null,
+    }))
+  );
 
-    await db.insert(inboxMessages).values({
+  await db.insert(careerClubState).values(
+    clubRows.map((club) => ({
       careerId,
-      sentOn: NOW,
-      category: "board",
-      subject: "Welcome to the club",
-      body: "Board expectations set. Your first objectives will arrive shortly.",
-      isRead: 0,
-      actionPayloadJson: null,
-    });
-
-    const clubStates = await db
-      .select({
-        clubId: clubs.id,
-        transferBudgetDefault: clubs.transferBudgetDefault,
-        wageBudgetDefault: clubs.wageBudgetDefault,
-      })
-      .from(clubs);
-
-    await db.insert(careerClubState).values(
-      clubStates.map((club) => ({
-        careerId,
-        clubId: club.clubId,
-        transferBudget: club.transferBudgetDefault,
-        wageBudget: club.wageBudgetDefault,
-        weeklyWageSpend: Math.round(club.wageBudgetDefault / 8),
-        youthScoutSlots: 1,
-        transferScoutSlots: 2,
-        managerRating: 68,
-        moraleTeamAvg: 60,
-        currentLeaguePosition: null,
-      }))
-    );
-  }
+      clubId: club.id,
+      transferBudget: club.prestige >= 9 ? 120000000 : 45000000,
+      wageBudget: club.prestige >= 9 ? 3000000 : 1200000,
+      weeklyWageSpend: club.prestige >= 9 ? 1800000 : 600000,
+      youthScoutSlots: 1,
+      transferScoutSlots: 2,
+      managerRating: 68,
+      moraleTeamAvg: 60,
+      currentLeaguePosition: null,
+    }))
+  );
 
   sqlite.close();
 }

@@ -1,4 +1,4 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
 import { db } from "../db";
 import { inboxMessages } from "../db/schema";
 
@@ -7,7 +7,7 @@ export async function listInboxMessagesByCareerIds(
   limitPerCareer = 5
 ) {
   if (careerIds.length === 0) {
-    return new Map<number, typeof inboxMessages.$inferSelect[]>();
+    return new Map<number, (typeof inboxMessages.$inferSelect)[]>();
   }
 
   const rows = await db
@@ -16,7 +16,7 @@ export async function listInboxMessagesByCareerIds(
     .where(inArray(inboxMessages.careerId, careerIds))
     .orderBy(desc(inboxMessages.sentOn));
 
-  const grouped = new Map<number, typeof inboxMessages.$inferSelect[]>();
+  const grouped = new Map<number, (typeof inboxMessages.$inferSelect)[]>();
 
   for (const row of rows) {
     const existing = grouped.get(row.careerId) ?? [];

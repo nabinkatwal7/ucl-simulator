@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { careerClubState, careerSettings, careers, clubs } from "../db/schema";
+import { careerClubState, careerRosters, careerSettings, careers, clubs, players } from "../db/schema";
 import { createWelcomeMessage } from "./inboxService";
 
 export async function createCareer(input: {
@@ -61,6 +61,37 @@ export async function createCareer(input: {
       managerRating: 70,
       moraleTeamAvg: 60,
       currentLeaguePosition: null,
+    }))
+  );
+
+  const playerRows = await db
+    .select({
+      id: players.id,
+      seedClubId: players.seedClubId,
+    })
+    .from(players);
+
+  await db.insert(careerRosters).values(
+    playerRows.map((player, index) => ({
+      careerId,
+      playerId: player.id,
+      clubId: player.seedClubId,
+      squadRole: "rotation",
+      squadStatus: "senior",
+      shirtNumber: (index % 30) + 1,
+      joinedOn: now,
+      contractEndDate: new Date(now.getUTCFullYear() + 3, 5, 30),
+      releaseClause: null,
+      isListedForLoan: 0,
+      isListedForTransfer: 0,
+      morale: 65,
+      form: 60,
+      sharpnessPlaceholder: null,
+      fitness: 80,
+      staminaModifier: 0,
+      injuryStatus: "healthy",
+      injuryType: null,
+      injuryEndDate: null,
     }))
   );
 
